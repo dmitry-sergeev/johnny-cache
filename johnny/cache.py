@@ -3,6 +3,9 @@
 import re
 import time
 from uuid import uuid4
+import logging
+
+logger = logging.getLogger(__name__)
 
 try:
     from hashlib import md5
@@ -334,7 +337,6 @@ class QueryCacheBackend(object):
                                               cls.get_ordering(),
                                               result_type, db)
                 val = self.cache_backend.get(key, NotInCache(), db)
-
             if not isinstance(val, NotInCache):
                 if val == no_result_sentinel:
                     val = []
@@ -342,6 +344,7 @@ class QueryCacheBackend(object):
                 signals.qc_hit.send(sender=cls, tables=tables,
                         query=(sql, params, cls.query.ordering_aliases),
                         size=len(val), key=key)
+                logger.info("Read from cache: %s" % val)
                 return val
 
             if not blacklisted:
@@ -362,6 +365,9 @@ class QueryCacheBackend(object):
                     self.cache_backend.set(key, no_result_sentinel, settings.MIDDLEWARE_SECONDS, db)
                 else:
                     self.cache_backend.set(key, val, settings.MIDDLEWARE_SECONDS, db)
+                logger.info("Write to cache (%s): %s" % (key, val))
+            else:
+                logger.info("Can't write: key is None")
             return val
         return newfun
 
