@@ -1,19 +1,20 @@
 from warnings import warn
 
-import django
 from django.conf import settings
 from django.core.cache import get_cache, cache
 
 DISABLE_QUERYSET_CACHE = getattr(settings, 'DISABLE_QUERYSET_CACHE', False)
 
-BLACKLIST = getattr(settings, 'MAN_IN_BLACKLIST',
-            getattr(settings, 'JOHNNY_TABLE_BLACKLIST', []))
+DEFAULT_BLACKLIST = ['south_migrationhistory']
+
+BLACKLIST = list(getattr(settings, 'MAN_IN_BLACKLIST',
+            getattr(settings, 'JOHNNY_TABLE_BLACKLIST', []))) + DEFAULT_BLACKLIST
 BLACKLIST = set(BLACKLIST)
 
 WHITELIST = set(getattr(settings, 'JOHNNY_TABLE_WHITELIST', []))
 
 DB_CACHE_KEYS = dict((name, db.get('JOHNNY_CACHE_KEY', name))
-                 for name, db in settings.DATABASES.iteritems())
+                 for name, db in settings.DATABASES.items())
 
 MIDDLEWARE_KEY_PREFIX = getattr(settings, 'JOHNNY_MIDDLEWARE_KEY_PREFIX', 'jc')
 
